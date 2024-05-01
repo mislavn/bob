@@ -3,6 +3,8 @@
     "packages": [
       "rustup@1.26.0",
 
+      "bun@1.0.13",
+
       "python@3.11",
       "pipenv@2023.2.4",
 
