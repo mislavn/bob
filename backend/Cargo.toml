@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+    "server",
+]
+
+[workspace.dependencies]
+axum = { version = "0.7.5" }
+serde = { version = "1.0.200" }
