@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.10.6/.schema/devbox.schema.json",
+    "packages": [
+      "rustup@1.26.0",
+      "python@3.11",
+      "python310Packages.pip"
+    ],
+    "env": {
+        "VENV_DIR": ".venv"
+    },
+    "shell": {
+        "init_hook": ". $VENV_DIR/bin/activate"
+    }
+}
