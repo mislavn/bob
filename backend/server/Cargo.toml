@@ -1,10 +1,18 @@
 [package]
-name = "server"
+name = "example-sqlx-postgres"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+publish = false
 
 [dependencies]
+logging = { workspace = true }
+tracing = { workspace = true }
+
 axum = { workspace = true }
-serde = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+
+serde = { workspace = true, features = ["derive"] }
+tower = { workspace = true, features = ["util", "timeout"] }
+tower-http = { workspace = true, features = ["add-extension", "trace"] }
+uuid = { workspace = true, features = ["serde", "v4"] }
+anyhow = { workspace = true }

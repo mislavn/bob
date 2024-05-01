@@ -1,9 +1,21 @@
 [workspace]
-
+resolver = "2"
 members = [
     "server",
+    "logging",
 ]
 
 [workspace.dependencies]
 axum = { version = "0.7.5" }
 serde = { version = "1.0.200" }
+tokio = { version = "1.37.0" }
+tracing = { version = "0.1.40" }
+tracing-subscriber = { version = "0.3.18" }
+sqlx = { version = "0.7.4" }
+anyhow = { version = "1.0.82" }
+tower = { version = "0.4", features = ["util", "timeout"] }
+tower-http = { version = "0.5.0" }
+uuid = { version = "1.0" }
+
+# local
+logging = { path = "./logging" }
