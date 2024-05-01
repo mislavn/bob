@@ -5,6 +5,8 @@
 
       "python@3.11",
       "pipenv@2023.2.4",
+
+      "just@1.25.2",
       "pre-commit@3.3.3"
     ],
     "shell": {
