@@ -10,11 +10,13 @@
     "typecheck": "node_modules/typescript/bin/tsc --noEmit"
   },
   "dependencies": {
+    "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.3"
+    "react-hook-form": "^7.51.3"
   },
   "devDependencies": {
+    "@hookform/resolvers": "^3.3.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -27,6 +29,7 @@
     "prettier-plugin-tailwindcss": "^0.5.14",
     "tailwindcss": "^3.4.3",
     "typescript": "^5",
-    "typescript-eslint": "^7.8.0"
+    "typescript-eslint": "^7.8.0",
+    "zod": "^3.23.5"
   }
 }
