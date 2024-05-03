@@ -18,7 +18,7 @@ export const Input: FC<InputProps> = ({
   ...inputProps
 }) => {
   return (
-    <>
+    <div>
       <label
         htmlFor={id}
         className="block text-sm font-medium leading-6 text-gray-900"
@@ -38,6 +38,6 @@ export const Input: FC<InputProps> = ({
         />
         {error?.message ? <span>{error.message}</span> : null}
       </div>
-    </>
+    </div>
   )
 }
