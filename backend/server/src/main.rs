@@ -1,37 +1,33 @@
-//! Provides a RESTful web server managing some Todos.
-//!
-//! API will be:
-//!
-//! - `GET /todos`: return a JSON list of Todos.
-//! - `POST /todos`: create a new Todo.
-//! - `PATCH /todos/:id`: update a specific Todo.
-//! - `DELETE /todos/:id`: delete a specific Todo.
-//!
-//! Run with
-//!
-//! ```not_rust
-//! cargo run -p example-todos
-//! ```
+mod database;
+
+use database::{Answer, Db, Question};
 
 use axum::{
     error_handling::HandleErrorLayer,
-    extract::{Path, Query, State},
+    extract::State,
     http::StatusCode,
     response::IntoResponse,
-    routing::{get, patch, post},
+    routing::{get, post},
     Json, Router,
 };
+
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
+use time::Duration;
 use tower::{BoxError, ServiceBuilder};
 use tower_http::trace::TraceLayer;
-use uuid::Uuid;
 
-type Db = Arc<RwLock<HashMap<Uuid, Todo>>>;
+use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
+
+const COUNTER_KEY: &str = "counter";
+
+#[derive(Default, Deserialize, Serialize)]
+struct Counter(usize);
+
+async fn handler(session: Session) -> impl IntoResponse {
+    let counter: Counter = session.get(COUNTER_KEY).await.unwrap().unwrap_or_default();
+    session.insert(COUNTER_KEY, counter.0 + 1).await.unwrap();
+    format!("Current count: {}", counter.0)
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -39,11 +35,16 @@ async fn main() -> anyhow::Result<()> {
 
     let db = Db::default();
 
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(Duration::seconds(60 * 5)));
+
     // Compose the routes
     let app = Router::new()
+        .route("/", get(handler))
         .route("/login", post(login))
-        .route("/todos", get(todos_index).post(todos_create))
-        .route("/todos/:id", patch(todos_update).delete(todos_delete))
+        .route("/question", post(question))
         // Add middleware to all routes
         .layer(
             ServiceBuilder::new()
@@ -57,106 +58,28 @@ async fn main() -> anyhow::Result<()> {
                         ))
                     }
                 }))
-                .timeout(Duration::from_secs(10))
+                .timeout(std::time::Duration::from_secs(9))
                 .layer(TraceLayer::new_for_http())
                 .into_inner(),
         )
+        .layer(session_layer)
         .with_state(db);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
-        .await?;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
     tracing::debug!("listening on {}", listener.local_addr()?);
     axum::serve(listener, app).await?;
 
     Ok(())
 }
 
-// The query parameters for todos index
-#[derive(Debug, Deserialize, Default)]
-pub struct Pagination {
-    pub offset: Option<usize>,
-    pub limit: Option<usize>,
-}
+async fn question(State(_db): State<Db>, Json(question): Json<Question>) -> impl IntoResponse {
+    tracing::info!("question => {:?}", question);
 
-async fn todos_index(
-    pagination: Option<Query<Pagination>>,
-    State(db): State<Db>,
-) -> impl IntoResponse {
-    let todos = db.read().unwrap();
-
-    let Query(pagination) = pagination.unwrap_or_default();
-
-    let todos = todos
-        .values()
-        .skip(pagination.offset.unwrap_or(0))
-        .take(pagination.limit.unwrap_or(usize::MAX))
-        .cloned()
-        .collect::<Vec<_>>();
-
-    Json(todos)
-}
-
-#[derive(Debug, Deserialize)]
-struct CreateTodo {
-    text: String,
-}
-
-async fn todos_create(State(db): State<Db>, Json(input): Json<CreateTodo>) -> impl IntoResponse {
-    let todo = Todo {
-        id: Uuid::new_v4(),
-        text: input.text,
-        completed: false,
+    let answer = Answer {
+        answer: "TODO".to_string(),
     };
 
-    db.write().unwrap().insert(todo.id, todo.clone());
-
-    (StatusCode::CREATED, Json(todo))
-}
-
-#[derive(Debug, Deserialize)]
-struct UpdateTodo {
-    text: Option<String>,
-    completed: Option<bool>,
-}
-
-async fn todos_update(
-    Path(id): Path<Uuid>,
-    State(db): State<Db>,
-    Json(input): Json<UpdateTodo>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let mut todo = db
-        .read()
-        .unwrap()
-        .get(&id)
-        .cloned()
-        .ok_or(StatusCode::NOT_FOUND)?;
-
-    if let Some(text) = input.text {
-        todo.text = text;
-    }
-
-    if let Some(completed) = input.completed {
-        todo.completed = completed;
-    }
-
-    db.write().unwrap().insert(todo.id, todo.clone());
-
-    Ok(Json(todo))
-}
-
-async fn todos_delete(Path(id): Path<Uuid>, State(db): State<Db>) -> impl IntoResponse {
-    if db.write().unwrap().remove(&id).is_some() {
-        StatusCode::NO_CONTENT
-    } else {
-        StatusCode::NOT_FOUND
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
-struct Todo {
-    id: Uuid,
-    text: String,
-    completed: bool,
+    (StatusCode::CREATED, Json(answer))
 }
 
 async fn login(

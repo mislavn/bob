@@ -16,3 +16,5 @@ tower = { workspace = true, features = ["util", "timeout"] }
 tower-http = { workspace = true, features = ["add-extension", "trace"] }
 uuid = { workspace = true, features = ["serde", "v4"] }
 anyhow = { workspace = true }
+tower-sessions = { workspace = true }
+time = { workspace = true }
