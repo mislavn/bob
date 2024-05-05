@@ -1,21 +1,25 @@
 {
-    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.10.6/.schema/devbox.schema.json",
-    "packages": [
-      "rustup@1.26.0",
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.10.6/.schema/devbox.schema.json",
+  "packages": [
+    "clang@16.0.6",
+    "llvm@11.1.0",
+    "lld@16.0.6",
+    "mold@2.3.3",
+    "libiconv@latest",
+    "rustup@1.26.0",
+    "bun@1.0.13",
 
-      "bun@1.0.13",
+    "python@3.11",
+    "pipenv@2023.2.4",
 
-      "python@3.11",
-      "pipenv@2023.2.4",
+    "postgresql@15.6",
 
-      "postgresql@15.6",
-
-      "just@1.25.2",
-      "pre-commit@3.3.3"
-    ],
-    "shell": {
-        "init_hook": [
-          "pipenv shell"
-        ]
-    }
+    "just@1.25.2",
+    "pre-commit@3.3.3"
+  ],
+  "shell": {
+    "init_hook": [
+      "pipenv shell"
+    ]
+  }
 }
